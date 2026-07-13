@@ -98,6 +98,35 @@ test("lintFiles reports output when the linter finds issues", { concurrency: fal
   })
 })
 
+test("lintFiles runs golangci-lint only with its project config", { concurrency: false }, async () => {
+  const dir = await makeDir()
+  const file = path.join(dir, "main.go")
+  await writeFile(file, "package main\n")
+  assert.deepEqual(lintFiles([file]), [])
+
+  await writeFile(path.join(dir, ".golangci.yml"), "linters: {}\n")
+  await withFakeLinter("golangci-lint", 'echo "Go issue"; exit 1', async () => {
+    const reports = lintFiles([file])
+    assert.equal(reports[0]?.linter, "golangci-lint")
+    assert.match(reports[0].output, /Go issue/)
+  })
+})
+
+test("lintFiles runs Ruff only when configured", { concurrency: false }, async () => {
+  const dir = await makeDir()
+  const file = path.join(dir, "app.py")
+  await writeFile(file, "x=1\n")
+  await writeFile(path.join(dir, "pyproject.toml"), "[project]\nname = \"demo\"\n")
+  assert.deepEqual(lintFiles([file]), [])
+
+  await writeFile(path.join(dir, "ruff.toml"), "line-length = 100\n")
+  await withFakeLinter("ruff", 'echo "Python issue"; exit 1', async () => {
+    const reports = lintFiles([file])
+    assert.equal(reports[0]?.linter, "ruff")
+    assert.match(reports[0].output, /Python issue/)
+  })
+})
+
 test("lintFiles stays silent on a clean exit", { concurrency: false }, async () => {
   const dir = await makeDir()
   await writeFile(path.join(dir, ".oxlintrc.json"), "{}")

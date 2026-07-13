@@ -49,16 +49,18 @@ ends (`agent:turn-end`).
 
 The formatter is auto-detected by walking up from each file's directory:
 
-| Config file                         | Formatter              |
-| ----------------------------------- | ---------------------- |
-| `biome.json`, `biome.jsonc`         | `biome format --write` |
-| `.oxfmtrc.json`                     | `oxfmt`                |
-| `.prettierrc*`, `prettier.config.*` | `prettier --write`     |
+| File/config                                      | Formatter              |
+| ------------------------------------------------ | ---------------------- |
+| `.go`                                            | `gofmt -w`             |
+| `.py`, `.pyi` with Ruff configuration            | `ruff format`          |
+| `biome.json`, `biome.jsonc`                      | `biome format --write` |
+| `.oxfmtrc.json`                                  | `oxfmt`                |
+| `.prettierrc*`, `prettier.config.*`              | `prettier --write`     |
 
-Project-local binaries (`node_modules/.bin`) are preferred over `PATH`. Files
-without a JS/TS-adjacent extension are ignored, and a missing or failing
-formatter is skipped silently. Files written via the `bash` tool are not
-tracked.
+Ruff is enabled by `ruff.toml`, `.ruff.toml`, or a `[tool.ruff]` table in
+`pyproject.toml`. Project-local binaries (`node_modules/.bin` and `.venv/bin`)
+are preferred over `PATH`. Unsupported files and missing or failing formatters
+are skipped silently. Files written via the `bash` tool are not tracked.
 
 ### Install
 
@@ -78,16 +80,18 @@ sees at the start of its next turn (`api.agent.notify`).
 
 The linter is auto-detected by walking up from each file's directory:
 
-| Config file                          | Linter       |
-| ------------------------------------ | ------------ |
-| `.oxlintrc.json`, `oxlint.config.*`  | `oxlint`     |
-| `biome.json`, `biome.jsonc`          | `biome lint` |
-| `eslint.config.*`, `.eslintrc*`      | `eslint`     |
+| File/config                                      | Linter                |
+| ------------------------------------------------ | --------------------- |
+| `.go` with `.golangci.{yml,yaml,toml,json}`      | `golangci-lint run`   |
+| `.py`, `.pyi` with Ruff configuration            | `ruff check`          |
+| `.oxlintrc.json`, `oxlint.config.*`              | `oxlint`              |
+| `biome.json`, `biome.jsonc`                      | `biome lint`          |
+| `eslint.config.*`, `.eslintrc*`                  | `eslint`              |
 
-Project-local binaries (`node_modules/.bin`) are preferred over `PATH`. Only
-JS/TS source extensions are linted, output is truncated to 4000 characters,
-and a missing or crashing linter is skipped silently. Files written via the
-`bash` tool are not tracked.
+Only linters explicitly configured by the project are run. Project-local
+binaries (`node_modules/.bin` and `.venv/bin`) are preferred over `PATH`.
+Output is truncated to 4000 characters, and a missing or crashing linter is
+skipped silently. Files written via the `bash` tool are not tracked.
 
 ### Install
 

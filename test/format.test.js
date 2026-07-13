@@ -110,6 +110,37 @@ test("formatFiles runs the detected formatter on supported files", { concurrency
   })
 })
 
+test("formatFiles runs gofmt for Go files without a config", { concurrency: false }, async () => {
+  const dir = await makeDir()
+  const file = path.join(dir, "main.go")
+  await writeFile(file, "package main\n")
+  const logFile = path.join(dir, "gofmt.log")
+
+  await withFakeFormatter("gofmt", logFile, async () => {
+    const runs = formatFiles([file])
+    assert.equal(runs[0]?.formatter, "gofmt")
+    const { readFile } = await import("node:fs/promises")
+    assert.deepEqual((await readFile(logFile, "utf8")).trim().split("\n"), ["-w", file])
+  })
+})
+
+test("formatFiles runs Ruff only when the project config enables it", { concurrency: false }, async () => {
+  const dir = await makeDir()
+  const file = path.join(dir, "app.py")
+  await writeFile(file, "x=1\n")
+  await writeFile(path.join(dir, "pyproject.toml"), "[project]\nname = \"demo\"\n")
+  assert.deepEqual(formatFiles([file]), [])
+
+  await writeFile(path.join(dir, "pyproject.toml"), "[tool.ruff]\nline-length = 100\n")
+  const logFile = path.join(dir, "ruff.log")
+  await withFakeFormatter("ruff", logFile, async () => {
+    const runs = formatFiles([file])
+    assert.equal(runs[0]?.formatter, "ruff")
+    const { readFile } = await import("node:fs/promises")
+    assert.deepEqual((await readFile(logFile, "utf8")).trim().split("\n"), ["format", file])
+  })
+})
+
 test("formatFiles ignores a missing formatter binary", { concurrency: false }, async () => {
   const dir = await makeDir()
   await writeFile(path.join(dir, "biome.json"), "{}")
