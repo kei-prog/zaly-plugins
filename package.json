@@ -6,6 +6,10 @@
   "scripts": {
     "test": "node --test"
   },
+  "dependencies": {
+    "@injaneity/pi-computer-use": "git+https://github.com/injaneity/pi-computer-use.git#v0.4.3",
+    "jiti": "^2.7.0"
+  },
   "engines": {
     "node": ">=22.11"
   }

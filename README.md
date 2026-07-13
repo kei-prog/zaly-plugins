@@ -2,6 +2,45 @@
 
 Personal plugins for [zaly](https://github.com/folke/zaly).
 
+## Computer Use
+
+`plugins/computer-use.js` exposes
+[`pi-computer-use`](https://github.com/injaneity/pi-computer-use) through zaly.
+It reuses the upstream accessibility backends, immutable UI state, action
+verification, and native helper while adapting tool registration, rich image
+results, session history, commands, and lifecycle events to zaly's plugin API.
+
+The plugin activates the upstream tools automatically, including `find_roots`,
+`observe_ui`, `search_ui`, `inspect_ui`, `act_ui`, and `wait_for`. Run
+`/computer-use` to inspect the active configuration.
+
+### Requirements
+
+- zaly
+- Node.js 22.11 or newer
+- macOS 14 or newer, or an interactive Windows desktop session
+- macOS Accessibility and Screen Recording permissions for
+  `/Applications/pi-computer-use.app`
+
+### Install
+
+Install dependencies once after cloning or updating the repository:
+
+```bash
+npm install
+ln -sfn "$(ghq root)/github.com/kei-prog/zaly-plugins/plugins/computer-use.js" \
+  ~/.config/zaly/plugins/computer-use.js
+```
+
+Restart zaly or run `/reload`. On first use, follow the permission setup shown
+in zaly. Project-specific configuration can be placed in
+`.pi/computer-use.json`; the `PI_COMPUTER_USE_*` environment overrides from the
+upstream package are also supported.
+
+Computer Use actions use zaly's normal tool permission scope. To require an
+interactive confirmation for state-changing operations, add rules such as
+`Tool(act_ui)` and `Tool(navigate_browser)` to the `ask` permission list.
+
 ## RTK bash rewriter
 
 `plugins/rtk.js` wraps zaly's built-in `bash` tool and passes each command through [`rtk rewrite`](https://github.com/rtk-ai/rtk) before execution. If RTK is unavailable, times out, exits unsuccessfully, or returns empty output, the original command is preserved.
